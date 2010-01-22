@@ -12,6 +12,10 @@ const int DirectionPinMotorA = 12;
 const int DirectionPinMotorB = 13;
 const int SerialSpeed = 9600;         // Serial baud rate
 const int MaxMotorSpeed = 175;        // 70% capibility
+char* motorADirection = "";           // Global var to hold active direction of motor A
+char* motorBDirection = "";           // Global var to hold active direction of motor B
+int motorACurrentSpeed = 0;           // Global var to hold active speed of motor A
+int motorBCurrentSpeed = 0;           // Global var to hold active speed of motor B
 
 // PING)))
 const int pingPin = 7;                // digital pin 7
@@ -121,6 +125,54 @@ long microsecondsToInches(long microseconds) {
 
 
 /**
+ * Moves a given motor a gven direction at a given speed.
+ *
+ * char motor = The motor to move (a = motorA, b = motorB, c = both motors).
+ * char* motorDirection = Direction to run the motor ("forward" or "reverse").
+ * int motorSpeed = Speed to run the motor (0 - MaxMotorSpeed)
+ */
+void moveMotor(char motor, char* motorDirection, int motorSpeed) {
+  Serial.println("EXEC: moveMotor");
+  
+  int dir = 0;
+  
+  if(motorDirection == "forward") dir = HIGH;
+  else if(motorDirection == "reverse") dir = LOW;
+  
+  switch(motor) {
+    // Motor A
+    case 'a':
+      analogWrite(PwmPinMotorA, motorSpeed);
+      digitalWrite(DirectionPinMotorA, dir);
+      motorACurrentSpeed = motorSpeed;
+      motorADirection = motorDirection;
+    break;
+   
+    // Motor B
+    case 'b':
+      analogWrite(PwmPinMotorB, motorSpeed);
+      digitalWrite(DirectionPinMotorB, dir);
+      motorBCurrentSpeed = motorSpeed;
+      motorBDirection = motorDirection;
+    break;
+       
+    // Both Motors
+    case 'c':
+      analogWrite(PwmPinMotorA, motorSpeed);
+      digitalWrite(DirectionPinMotorA, dir);
+      motorACurrentSpeed = motorSpeed;
+      motorADirection = motorDirection;
+    
+      analogWrite(PwmPinMotorB, motorSpeed);
+      digitalWrite(DirectionPinMotorB, dir);
+      motorBCurrentSpeed = motorSpeed;
+      motorBDirection = motorDirection;
+    break;  
+  }
+} 
+
+
+/**
  * Moves the rover.
  */
 void rove() {
@@ -137,23 +189,7 @@ void rove() {
       spin(0, MaxMotorSpeed * 0.8, 1000); // Spin left
     else
       spin(1, MaxMotorSpeed * 0.8, 1000); // Spin right
-  } else drive(); // Move forward.
-}
-
-
-/**
- * Moves the Rove forward.
- */
-void drive() {
-  Serial.println("EXEC: drive");
-  
-  // motor A forwards
-  analogWrite(PwmPinMotorA, MaxMotorSpeed);
-  digitalWrite(DirectionPinMotorA, HIGH);
-
-  // motor B forwards
-  analogWrite(PwmPinMotorB, MaxMotorSpeed);
-  digitalWrite(DirectionPinMotorB, LOW);
+  } else moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
 }
 
 
@@ -170,13 +206,8 @@ void turnLeft(int turnSpeed, int duration) {
   Serial.println(duration);
   
   if(turnSpeed < MaxMotorSpeed) {
-    // motor A forwards
-    analogWrite(PwmPinMotorA, turnSpeed);
-    digitalWrite(DirectionPinMotorA, HIGH);
-  
-    // motor B forwards
-    analogWrite(PwmPinMotorB, MaxMotorSpeed);
-    digitalWrite(DirectionPinMotorB, LOW);  
+    moveMotor('a', "forward", turnSpeed);
+    moveMotor('a', "reverse", MaxMotorSpeed);
   }
   
   delay(duration);
@@ -196,13 +227,8 @@ void turnRight(int turnSpeed, int duration) {
   Serial.println(duration); 
   
   if(turnSpeed < MaxMotorSpeed) {
-    // motor A forwards
-    analogWrite(PwmPinMotorA, MaxMotorSpeed);
-    digitalWrite(DirectionPinMotorA, HIGH);
-  
-    // motor B forwards
-    analogWrite(PwmPinMotorB, turnSpeed);
-    digitalWrite(DirectionPinMotorB, LOW);  
+    moveMotor('a', "forward", MaxMotorSpeed);
+    moveMotor('b', "reverse", turnSpeed);
   }
   
   delay(duration);
@@ -226,22 +252,13 @@ void spin(int turnDirection, int turnSpeed, int duration) {
   
   if(turnDirection == 0) {
     // Left 
-    // motor A reverse
-    analogWrite(PwmPinMotorA, turnSpeed);
-    digitalWrite(DirectionPinMotorA, LOW);
-    
+    moveMotor('a', "reverse", MaxMotorSpeed);
+    moveMotor('b', "forward", MaxMotorSpeed);
     // motor B forwards
-    analogWrite(PwmPinMotorB, MaxMotorSpeed);
-    digitalWrite(DirectionPinMotorB, LOW);
   } else {
     // Right
-    // motor A forwards
-    analogWrite(PwmPinMotorA, MaxMotorSpeed);
-    digitalWrite(DirectionPinMotorA, HIGH);
-    
-    // motor B reverse
-    analogWrite(PwmPinMotorB, turnSpeed);
-    digitalWrite(DirectionPinMotorB, HIGH);
+    moveMotor('a', "forward", MaxMotorSpeed);
+    moveMotor('b', "reverse", MaxMotorSpeed);
   }
   
   delay(duration);
