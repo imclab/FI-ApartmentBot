@@ -23,9 +23,9 @@ const int pingPin = 7;                // digital pin 7
 // ADXL3xx Accelerometer
 #define sampleSize 8                  // MUST be a multiple of 2, see later for why
 #define shiftBits 3                   // sampleSize = 2 ^ shiftBits
-const int ADXLxpin = 3;               // x-axis analog ping 3
+const int ADXLxpin = 1;               // x-axis analog ping 3
 const int ADXLypin = 2;               // y-axis analog ping 2
-const int ADXLzpin = 1;               // z-axis analog ping 1
+const int ADXLzpin = 3;               // z-axis analog ping 1
 static int startVal = 512;            // I picked startVal somewhat arbitrariliy.  What you probably should do is read the sensor in setup(), do some calibrations by turning the sensor on and off with the reset pin (ST), and pick a good starting value.
 int curSamp = 0;
 int xVal = 0;
@@ -44,8 +44,8 @@ int zPreAvg = 0;
 
 void setup() {
   Serial.begin(SerialSpeed);
-  initArdumoto();
-  initADXL();
+  initArdumoto();              // Init the motor controller
+  initADXL();                  // Init the accelerometer
 }
 
 
@@ -134,40 +134,44 @@ long microsecondsToInches(long microseconds) {
 void moveMotor(char motor, char* motorDirection, int motorSpeed) {
   Serial.println("EXEC: moveMotor");
   
-  int dir = 0;
-  
-  if(motorDirection == "forward") dir = HIGH;
-  else if(motorDirection == "reverse") dir = LOW;
-  
-  switch(motor) {
-    // Motor A
-    case 'a':
-      analogWrite(PwmPinMotorA, motorSpeed);
-      digitalWrite(DirectionPinMotorA, dir);
-      motorACurrentSpeed = motorSpeed;
-      motorADirection = motorDirection;
-    break;
-   
-    // Motor B
-    case 'b':
-      analogWrite(PwmPinMotorB, motorSpeed);
-      digitalWrite(DirectionPinMotorB, dir);
-      motorBCurrentSpeed = motorSpeed;
-      motorBDirection = motorDirection;
-    break;
-       
-    // Both Motors
-    case 'c':
-      analogWrite(PwmPinMotorA, motorSpeed);
-      digitalWrite(DirectionPinMotorA, dir);
-      motorACurrentSpeed = motorSpeed;
-      motorADirection = motorDirection;
+  if(motorSpeed <= MaxMotorSpeed) {
+    int dir = 0;
     
-      analogWrite(PwmPinMotorB, motorSpeed);
-      digitalWrite(DirectionPinMotorB, dir);
-      motorBCurrentSpeed = motorSpeed;
-      motorBDirection = motorDirection;
-    break;  
+    if(motorDirection == "forward") dir = HIGH;
+    else if(motorDirection == "reverse") dir = LOW;
+    
+    switch(motor) {
+      // Motor A
+      case 'a':
+        analogWrite(PwmPinMotorA, motorSpeed);
+        digitalWrite(DirectionPinMotorA, dir);
+        motorACurrentSpeed = motorSpeed;
+        motorADirection = motorDirection;
+      break;
+     
+      // Motor B
+      case 'b':
+        analogWrite(PwmPinMotorB, motorSpeed);
+        digitalWrite(DirectionPinMotorB, dir);
+        motorBCurrentSpeed = motorSpeed;
+        motorBDirection = motorDirection;
+      break;
+         
+      // Both Motors
+      case 'c':
+        analogWrite(PwmPinMotorA, motorSpeed);
+        digitalWrite(DirectionPinMotorA, dir);
+        motorACurrentSpeed = motorSpeed;
+        motorADirection = motorDirection;
+      
+        analogWrite(PwmPinMotorB, motorSpeed);
+        digitalWrite(DirectionPinMotorB, dir);
+        motorBCurrentSpeed = motorSpeed;
+        motorBDirection = motorDirection;
+      break;  
+    }
+  } else {
+    Serial.println("ERROR: moveMotor: Supplied motorSpeed was out of bounds.");  
   }
 } 
 
@@ -190,6 +194,17 @@ void rove() {
     else
       spin(1, MaxMotorSpeed * 0.8, 1000); // Spin right
   } else moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
+}
+
+
+/**
+ * Reverses the robot for a given duration at a given speed.
+ *
+ * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
+ * int reverseDuration = Time in ms of reverse duration.
+ */
+void reverse(int reverseSpeed, int reverseDuration) {
+  moveMotor('c', "reverse", reverseDuration);
 }
 
 
@@ -288,13 +303,14 @@ void trackProgress() {
   Serial.println("EXEC: trackProgress");
   
   // TODO: figure out how to calculate this.
+  
 }
 
 
 /**
  * Monitors a ADXL3xx accelerometer and checks if the rover is close to tipping over.
  */ 
-void monitorPitchAndRoll() {
+boolean monitorPitchAndRoll() {
   Serial.println("EXEC: monitorPitchAndRoll");
   
   // We use curSamp as an index into the array and increment at the
@@ -354,4 +370,6 @@ void monitorPitchAndRoll() {
   Serial.println(zVal);
 
   curSamp++;  // increment our array pointer
+  
+  return true; // override (return false for tip);
 }
