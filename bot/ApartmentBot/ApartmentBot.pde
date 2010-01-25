@@ -1,49 +1,38 @@
-/*
-  Test program to get autonomous travel function into the rover.
-  Using Ultrasonic Range Finders (PING)))), we can detect obsitcals and avoid hitting them.
-  Using a ADXL3xx Accelerometer we can detect if we are prone to tipping/rolling over.
-  As we travel we send our X and Y location to the server to track us.
-*/
+/**
+** FI-ApartmentBot
+** Written By: Matt Fisher
+** http://www.FisherInnovation.com
+**/
 
+//#include <XBee.h>
+//#include <Servo.h>
+
+// Serial
 const int SerialSpeed = 9600;         // Serial baud rate
 
+// General
+boolean roveMode = true;              // If the robot startup in rover mode or not, also the switch for turning rove mode on and off.
+boolean botReady = false;             // Holds back the loop until checks have been verified.
+const int roveCheckInterval = 200;    // Time between obstical checks in rover mode.
+
 // Ardumoto
-const int PwmPinMotorA = 10;
-const int PwmPinMotorB = 11;
-const int DirectionPinMotorA = 12;
-const int DirectionPinMotorB = 13;
-const int MaxMotorSpeed = 175;        // 70% capibility
-const int SpinDuration = 500;		  // The amount of time in ms that is take for the rover to do a 180 degreed turn at MaxMotorSpeed
-char* motorADirection = "";           // Global var to hold active direction of motor A
-char* motorBDirection = "";           // Global var to hold active direction of motor B
-int motorACurrentSpeed = 0;           // Global var to hold active speed of motor A
-int motorBCurrentSpeed = 0;           // Global var to hold active speed of motor B
+const int PwmPinMotorA = 10;          // Motor A PWM pin
+const int PwmPinMotorB = 11;          // Motor B PWM pin
+const int DirectionPinMotorA = 12;    // Motor A digital pin
+const int DirectionPinMotorB = 13;    // Motor B digital pin
 
 // PING)))
 const int pingPin = 7;                // digital pin 7
+const int minimumDetectDistance = 3;  // Minimum distance in inches the sensor will allow the robot to come to an obsitcal
 
 // ADXL3xx Accelerometer
-#define sampleSize 8                  // MUST be a multiple of 2, see later for why
-#define shiftBits 3                   // sampleSize = 2 ^ shiftBits
+const int maxRoll = 45;               // Max allowance in roll before tip correction (degrees)
+const int maxPitch = 45;              // Max allowance in pitch before tip correction (degrees)
 const int ADXLxpin = 1;               // x-axis analog ping 3
 const int ADXLypin = 2;               // y-axis analog ping 2
 const int ADXLzpin = 3;               // z-axis analog ping 1
-static int startVal = 512;            // I picked startVal somewhat arbitrariliy.  What you probably should do is read the sensor in setup(), do some calibrations by turning the sensor on and off with the reset pin (ST), and pick a good starting value.
-int curSamp = 0;
-int xVal = 0;
-int yVal = 0;
-int zVal = 0;
-int xVals[sampleSize];
-int yVals[sampleSize];
-int zVals[sampleSize];
-int xAvg = 0;
-int yAvg = 0;
-int zAvg = 0;
-int xPreAvg = 0;
-int yPreAvg = 0;
-int zPreAvg = 0;
 
-// IR Config
+// IR Beacon Config
 const int IR_FRONT = 8;
 const int IR_BACK = 7;
 const int IR_RIGHT = 6;
@@ -54,44 +43,27 @@ const int led_south = 11;
 const int led_west = 13;
 const int led_delay = 150;
 const int led_cycles = 2;
-unsigned long timer_irs = 0;
-unsigned int IR_cnt[4];
-byte ir_compare=0;
 
 
 void setup() {
   Serial.begin(SerialSpeed);
-  initArdumoto();              // Init the motor controller
-  initADXL();                  // Init the accelerometer
-  Init_IRs();
+  
+  // init sensors
+  initXbee();       // Xbee
+  initArdumoto();   // Motor Controller
+  initADXL();       // Accelerometer
+  initIRs();        // IR sensors for docking station
+  
+  if(!selfTest()) botReady = false; // Run a selftest on boot.
 }
 
 
 void loop() {
-  rove();
-  delay(200); // The drive time between PING))) checks.
+  if(botReady) {
+    // Start autonomous roving pending the switch is on.
+    if(roveMode) rove(roveCheckInterval); // The drive time between PING))) checks.
+    else {
+      // TODO: setup wireless control 
+    }
+  }
 }
-
-
-/**
- * Attempts to calculate where the robot has been.
- */
-void trackProgress() {
-  Serial.println("EXEC: trackProgress");
-
-  // TODO: figure out how to calculate this.
-}
-
-
-/**
- * Attempts to find the docking station to recharge the power system.
- * The station holds a infared LED array which we will attempt to locate, confirm and approach.
- *
- * Pololu IR Beacon Transceiver Pair
- */
-void findHome() {
-  read_irs();        // Capture IR packets..
-  analyse_irs(500);  // After 500 millisecon will analyse the packets captured
-}
-
-

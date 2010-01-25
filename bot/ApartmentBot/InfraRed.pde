@@ -1,12 +1,24 @@
-void Init_IRs(void) {
+unsigned long timer_irs = 0;
+unsigned int IR_cnt[4];
+byte ir_compare=0;
+
+
+/**
+ * Set the pinModes on the IR device.
+ */
+void initIRs(void) {
+  Serial.println("EXEC: Infred.Init_IRs");
   pinMode(IR_FRONT, INPUT);  
   pinMode(IR_RIGHT, INPUT);
   pinMode(IR_BACK, INPUT);
   pinMode(IR_LEFT, INPUT); 
 }
 
-
-void read_irs(void) {
+/**
+ * 
+ */
+void readIRs(void) {
+  Serial.println("EXEC: Infred.read_irs");
   // If the north IR sensor is currently low then
   if(digitalRead(IR_FRONT) == LOW) IR_cnt[0]++; // Increase this value by one
   // If the east IR sensor is currently low then
@@ -18,13 +30,17 @@ void read_irs(void) {
 }
 
 
-// Routine to know the direction of the beacon.. 
-byte analyse_irs(unsigned int refresh_rate) {
+/**
+ * Routine to know the direction of the beacon.
+ */
+byte analyseIRs(unsigned int refresh_rate) {
+  Serial.println("EXEC: Infred.analyse_irs");
+  
   if((millis() - timer_irs) > refresh_rate) {
 
     // If the ir reading is leass than 10, means no beacon preset, soo.. 
     if((IR_cnt[0]+IR_cnt[1]+IR_cnt[2]+IR_cnt[3]) <= 5) {
-      off_leds();        // We turn off all the leds
+      offLEDs();        // We turn off all the leds
       ir_compare=5;    // We put ir_compare to 5 (mean nothing)
       //system_state=1;  // We put the autpilot to hold altitude only... 
     } else {
@@ -47,7 +63,7 @@ byte analyse_irs(unsigned int refresh_rate) {
       }
       else ir_compare=((ir_compare>>1)+2);  // Eliminate the first bit and plus two...
       
-      off_leds(); // Shut off all the leds
+      offLEDs(); // Shut off all the leds
 
       // Turn on the LED pointing to the beacon. 
       switch(ir_compare) {
@@ -79,12 +95,13 @@ byte analyse_irs(unsigned int refresh_rate) {
   }
 }
 
-/**************************************************************
+/**
  * The smart delay will improve performace of the IR beacons, instead wasting cpu time 
- with a normal delay loop, this function will delay x time in miliseconds, using that time to capture more IR 
- packets from the beacon.. =) 
- ***************************************************************/
-void smart_delay(unsigned int time) {
+ * with a normal delay loop, this function will delay x time in miliseconds, using that time to capture more IR 
+ * packets from the beacon.. =) 
+ */
+void smartDelay(unsigned int time) {
+  Serial.println("EXEC: Infred.smart_delay");
   unsigned long start_time= millis();
-  while((millis() - start_time) < time) read_irs();  
+  while((millis() - start_time) < time) readIRs();  
 }

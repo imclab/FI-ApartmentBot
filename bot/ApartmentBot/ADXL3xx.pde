@@ -1,8 +1,28 @@
+#define sampleSize 8                  // MUST be a multiple of 2, see later for why
+#define shiftBits 3                   // sampleSize = 2 ^ shiftBits
+
+static int startVal = 512;            // I picked startVal somewhat arbitrariliy.  What you probably should do is read the sensor in setup(), do some calibrations by turning the sensor on and off with the reset pin (ST), and pick a good starting value.
+
+int curSamp = 0;
+int xVal = 0;
+int yVal = 0;
+int zVal = 0;
+int xVals[sampleSize];
+int yVals[sampleSize];
+int zVals[sampleSize];
+int xAvg = 0;
+int yAvg = 0;
+int zAvg = 0;
+int xPreAvg = 0;
+int yPreAvg = 0;
+int zPreAvg = 0;
+
+
 /**
  * Sets up the pinModes to the ADXLxx Accelerometer .
  */
 void initADXL() {
-  Serial.println("EXEC: initADXL");
+  Serial.println("EXEC: ADXL3xx.initADXL");
   
   pinMode(ADXLxpin, INPUT);
   pinMode(ADXLypin, INPUT);
@@ -20,7 +40,7 @@ void initADXL() {
  * Monitors a ADXL3xx accelerometer and checks if the rover is close to tipping over.
  */ 
 boolean monitorPitchAndRoll() {
-  Serial.println("EXEC: monitorPitchAndRoll");
+  Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
   
   // We use curSamp as an index into the array and increment at the
   // end of the main loop(), so see if we need to reset it at the
@@ -39,9 +59,9 @@ boolean monitorPitchAndRoll() {
   yPreAvg = yAvg;
   zPreAvg = zAvg;
   
-  xAvg = 0;
-  yAvg = 0;
-  zAvg = 0;
+  xAvg = yAvg = zAvg = 0;
+  //yAvg = 0;
+  //zAvg = 0;
   
   for (int i=0; i < sampleSize; i++) {
 	xAvg += xVals[i];
@@ -81,4 +101,17 @@ boolean monitorPitchAndRoll() {
   curSamp++;  // increment our array pointer
   
   return true; // override (return false for tip);
+  
+  /*
+  
+  TODO: Add the conditions
+  
+  if(maxPitch) {
+    
+  }
+  
+  if(maxRoll) {
+    
+  }
+  */
 }

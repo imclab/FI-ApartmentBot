@@ -1,34 +1,25 @@
+char* motorADirection = ""; // Global var to hold active direction of motor A
+char* motorBDirection = ""; // Global var to hold active direction of motor B
+int motorACurrentSpeed = 0; // Global var to hold active speed of motor A
+int motorBCurrentSpeed = 0; // Global var to hold active speed of motor B
+
+// Roving Configuration
+const int spurtDuration = 200;    // The time it takes in ms to run a short burst of spin movement.
+const int suprtCheckAmount = 10;  // The amount of checks to run in a spurt test
+const int MaxMotorSpeed = 175;    // 70% capibility
+const int SpinDuration = 500;	  // The amount of time in ms that is take for the rover to do a 180 degreed turn at MaxMotorSpeed
+
+
 /**
  * Sets up the pinModes to the Ardumoto controller.
  */
 void initArdumoto() {
-  Serial.println("EXEC: initArdumoto");
+  Serial.println("EXEC: MotorControl.initArdumoto");
   
   pinMode(PwmPinMotorA, OUTPUT);
   pinMode(PwmPinMotorB, OUTPUT);
   pinMode(DirectionPinMotorA, OUTPUT);
   pinMode(DirectionPinMotorB, OUTPUT); 
-}
-
-
-/**
- * Moves the rover.
- */
-void rove() {
-  Serial.println("EXEC: rove");
-
-  monitorPitchAndRoll();  // Make sure we aren't going to tip over.
-
-  // Start by checking if anything is infront of us (3 inches)
-  if(readPing() < 3) {
-    stopRover();
-    
-    // Select a random direction to turn
-    if(random(0, 2) == 0)
-      spin(0, MaxMotorSpeed * 0.8, 500); // Spin left
-    else
-      spin(1, MaxMotorSpeed * 0.8, 500); // Spin right
-  } else moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
 }
 
 
@@ -40,7 +31,7 @@ void rove() {
  * int motorSpeed = Speed to run the motor (0 - MaxMotorSpeed)
  */
 void moveMotor(char motor, char* motorDirection, int motorSpeed) {
-  Serial.println("EXEC: moveMotor");
+  Serial.println("EXEC: MotorControl.moveMotor");
   
   if(motorSpeed <= MaxMotorSpeed) {
     int dir = 0;
@@ -79,7 +70,7 @@ void moveMotor(char motor, char* motorDirection, int motorSpeed) {
       break;  
     }
   } else {
-    Serial.println("ERROR: moveMotor: Supplied motorSpeed was out of bounds.");  
+    Serial.println("ERROR: MotorControl.moveMotor: Supplied motorSpeed was out of bounds.");  
   }
 }
 
@@ -90,8 +81,21 @@ void moveMotor(char motor, char* motorDirection, int motorSpeed) {
  * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
  * int reverseDuration = Time in ms of reverse duration.
  */
+void forward(int fowardSpeed, int forwardDuration) {
+  moveMotor('c', "forward", fowardSpeed);
+  delay(forwardDuration);
+}
+
+
+/**
+ * Reverses the robot for a given duration at a given speed.
+ *
+ * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
+ * int reverseDuration = Time in ms of reverse duration.
+ */
 void reverse(int reverseSpeed, int reverseDuration) {
-  moveMotor('c', "reverse", reverseDuration);
+  moveMotor('c', "reverse", reverseSpeed);
+  delay(reverseDuration);
 }
 
 
@@ -102,7 +106,7 @@ void reverse(int reverseSpeed, int reverseDuration) {
  * int duration = Time in ms to run the turn before going back to straight movement
  */
 void turnLeft(int turnSpeed, int duration) {
-  Serial.println("EXEC: turnLeft = speed:");
+  Serial.println("EXEC: MotorControl.turnLeft = speed:");
   Serial.print(turnSpeed);
   Serial.print(" dur:");
   Serial.println(duration);
@@ -123,7 +127,7 @@ void turnLeft(int turnSpeed, int duration) {
  * int duration = Time in ms to run the turn before going back to straight movement
  */
 void turnRight(int turnSpeed, int duration) {
-  Serial.println("EXEC: turnRight = speed:");
+  Serial.println("EXEC: MotorControl.turnRight = speed:");
   Serial.print(turnSpeed);
   Serial.print(" dur:");
   Serial.println(duration); 
@@ -145,7 +149,7 @@ void turnRight(int turnSpeed, int duration) {
  * int duration = Time in ms to run the turn before going back to straight movement
  */
 void spin(int turnDirection, int turnSpeed, int duration) {
-  Serial.print("EXEC: spin = dir:");
+  Serial.print("EXEC: MotorControl.spin = dir:");
   Serial.print(turnDirection);
   Serial.print(" speed:");
   Serial.print(turnSpeed);
@@ -171,7 +175,7 @@ void spin(int turnDirection, int turnSpeed, int duration) {
  * Stops the movement of the motors.
  */
 void stopRover() {
-  Serial.println("EXEC: stopRover");
+  Serial.println("EXEC: MotorControl.stopRover");
   
   // motor A
   analogWrite(PwmPinMotorA, 0);
