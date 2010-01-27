@@ -7,7 +7,7 @@ byte ir_compare=0;
  * Set the pinModes on the IR device.
  */
 void initIRs(void) {
-  Serial.println("EXEC: Infred.Init_IRs");
+  Serial.println("EXEC: Infred.initIRs");
   pinMode(IR_FRONT, INPUT);  
   pinMode(IR_RIGHT, INPUT);
   pinMode(IR_BACK, INPUT);
@@ -18,7 +18,7 @@ void initIRs(void) {
  * 
  */
 void readIRs(void) {
-  Serial.println("EXEC: Infred.read_irs");
+  Serial.println("EXEC: Infred.readIRs");
   // If the north IR sensor is currently low then
   if(digitalRead(IR_FRONT) == LOW) IR_cnt[0]++; // Increase this value by one
   // If the east IR sensor is currently low then
@@ -34,7 +34,7 @@ void readIRs(void) {
  * Routine to know the direction of the beacon.
  */
 byte analyseIRs(unsigned int refresh_rate) {
-  Serial.println("EXEC: Infred.analyse_irs");
+  Serial.println("EXEC: Infred.analyseIRs");
   
   if((millis() - timer_irs) > refresh_rate) {
 

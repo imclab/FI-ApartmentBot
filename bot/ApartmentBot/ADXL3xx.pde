@@ -41,7 +41,7 @@ void initADXL() {
  */ 
 boolean monitorPitchAndRoll() {
   Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
-  
+  /*
   // We use curSamp as an index into the array and increment at the
   // end of the main loop(), so see if we need to reset it at the
   // very start of the loop

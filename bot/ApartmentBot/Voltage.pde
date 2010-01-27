@@ -18,6 +18,13 @@ int currentBatteryVoltage = 0;               // Global value to hold the last re
 boolean isBatteryOK() {
   Serial.println("EXEC: Voltage.isBatteryOK");
   currentBatteryVoltage = readVoltage();
+  
+  // Debug bypass
+  if(currentBatteryVoltage == 0) {
+    Serial.println("Warning: No battery found.");
+    return true; // If the voltage is 0 there is no battery and we are connected to USB.
+  }
+  
   if(currentBatteryVoltage <= alertVoltage || currentBatteryVoltage <= minimumVoltage) return false;
   else return true;
 }
@@ -27,9 +34,13 @@ boolean isBatteryOK() {
  * Reads the input from analog 0 from the voltage divider and converts its into the actual voltage.
  */
 int readVoltage() {
-  Serial.println("EXEC: Voltage.readVoltage");
   int voltageVal = analogRead(voltageReadPin); 
   int batteryVoltage = voltageVal * voltageUnitValue * 2;
+  
+  Serial.print("EXEC: Voltage.readVoltage - ");
+  Serial.print(batteryVoltage);
+  Serial.println("V");
+  
   return batteryVoltage;
 }
 

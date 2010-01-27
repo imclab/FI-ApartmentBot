@@ -2,11 +2,15 @@
  * Runs a self test on the robot with verification.
  */
 boolean selfTest() {
-  Serial.println("EXEC: SelfTest.selfTest");
+  Serial.println("");
+  Serial.println("EXEC: SelfTest.selfTest - Starting Self Test");
   
   // Run a Lipo voltage check before we start robot movement.
   if(isBatteryOK()) botReady = true;
-  else return false; // Battery is dead
+  else {
+    Serial.println("Warning: Battery check has failed self test.");
+    return false; // Battery is dead
+  }
   
   // Drive system test.
   forward(MaxMotorSpeed, 500);
@@ -18,6 +22,8 @@ boolean selfTest() {
   
   // Infared Tests
   
+  Serial.println("EXEC: SelfTest.selfTest - Finished Self Test");
+  Serial.println("");
   
   return true;
 }

@@ -2,8 +2,6 @@
  * Reads the PING))) sensor & returns the distance in inches.
  */
 long readPing() {
-  Serial.println("EXEC: UltrasoniceRange.readPing");
-  
   // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
   // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
   pinMode(pingPin, OUTPUT);
@@ -19,6 +17,10 @@ long readPing() {
   pinMode(pingPin, INPUT);
   long duration = pulseIn(pingPin, HIGH);
 
+  Serial.print("EXEC: UltrasoniceRange.readPing - ");
+  Serial.print(microsecondsToInches(duration));
+  Serial.println(" inches");
+  
   return microsecondsToInches(duration);
 }
 
@@ -31,6 +33,6 @@ long readPing() {
  * See: http://www.parallax.com/dl/docs/prod/acc/28015-PING-v1.3.pdf
  */
 long microsecondsToInches(long microseconds) {
-  Serial.println("EXEC: UltrasoniceRange.microsecondsToInches");
+  //Serial.println("EXEC: UltrasoniceRange.microsecondsToInches");
   return microseconds / 74 / 2;
 }

@@ -7,21 +7,31 @@ void rove(int checkDelay) {
   // Make sure we aren't going to tip over. (ADXLxx)
   if(monitorPitchAndRoll()) {
     // Start by checking if anything is infront of us (minimumDetectDistance)
-    if(readPing() < minimumDetectDistance) {
-      stopRover();                     // Stop the rover before hitting the object.
-      reverse(MaxMotorSpeed / 2, 750); // Reverse for 3/4 of a second to allow for swing on the turn. 
-      
-      // Select a random direction to turn
-      obsticalCheck(random(0, 2));
-      
-    } else moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
+    int dis = readPing();
     
-    delay(checkDelay);
+    if(dis == 0) Serial.println("Error: Ultrasonic range sensor reads 0.");
+    else {
+      if(dis < minimumDetectDistance) {
+        stopRover();                     // Stop the rover before hitting the object.
+        reverse(MaxMotorSpeed / 2, 750); // Reverse for 3/4 of a second to allow for swing on the turn. 
+        
+        // Select a random direction to turn
+        obsticalCheck(random(0, 2));
+        
+      } else moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
+      
+      delay(checkDelay);
+    }
   } else {
     // About to tip over, stop and correct.
+    Serial.println("Warning: Tip correction activated.");
+    
     stopRover();
+    
     // TODO: Calculate which way to turn around based on roll.  
   }
+  
+  Serial.println("");
 }
 
 
