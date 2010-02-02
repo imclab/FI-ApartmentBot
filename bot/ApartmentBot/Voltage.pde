@@ -22,7 +22,7 @@ boolean isBatteryOK() {
   // Debug bypass
   if(currentBatteryVoltage == 0) {
     Serial.println("Warning: No battery found.");
-    return true; // If the voltage is 0 there is no battery and we are connected to USB.
+    return true; // If the voltage is 0 there is no battery and we are connected to USB or the wall.
   }
   
   if(currentBatteryVoltage <= alertVoltage || currentBatteryVoltage <= minimumVoltage) return false;

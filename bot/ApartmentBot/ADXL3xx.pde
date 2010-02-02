@@ -1,21 +1,26 @@
-#define sampleSize 8                  // MUST be a multiple of 2, see later for why
-#define shiftBits 3                   // sampleSize = 2 ^ shiftBits
+const int xPin = 1;   // x-axis of the accelerometer output - analog pin
+const int yPin = 2;   // y-axis of the accelerometer output - analog pin
+const int zPin = 3;   // z-axis of the accelerometer output - analog pin
 
-static int startVal = 512;            // I picked startVal somewhat arbitrariliy.  What you probably should do is read the sensor in setup(), do some calibrations by turning the sensor on and off with the reset pin (ST), and pick a good starting value.
+const int zeroOffsetSamples = 1000;  // # of samples to average for zero offset
+const int calibrateSeconds = 10;     // number of seconds for calibration test
 
-int curSamp = 0;
-int xVal = 0;
-int yVal = 0;
-int zVal = 0;
-int xVals[sampleSize];
-int yVals[sampleSize];
-int zVals[sampleSize];
-int xAvg = 0;
-int yAvg = 0;
-int zAvg = 0;
-int xPreAvg = 0;
-int yPreAvg = 0;
-int zPreAvg = 0;
+
+long xZero = 0;  // zero offset value for each axis (values at rest)
+long yZero = 0;
+long zZero = 0;
+
+int xMin = 0;  // min and max values found on each axis during calibration
+int xMax = 0;
+int yMin = 0;
+int yMax = 0;
+int zMin = 0;
+int zMax = 0;
+
+int x, y, z;  // for reading pin values
+
+long startCalibration;  // timer start value for calibration
+
 
 
 /**
@@ -24,15 +29,65 @@ int zPreAvg = 0;
 void initADXL() {
   Serial.println("EXEC: ADXL3xx.initADXL");
   
-  pinMode(ADXLxpin, INPUT);
-  pinMode(ADXLypin, INPUT);
-  pinMode(ADXLzpin, INPUT);
+  zeroOut();
+}
 
-  for (int i=0; i < sampleSize; i++) {
-    xVals[i] = startVal;
-    xVals[i] = startVal;
-    zVals[i] = startVal;
+/**
+ * Establish the zero offset values for each axis by reading the pin values a bunch of 
+ * times and averaging them -- the board must be motionless during this loop.
+ */
+void zeroOut() {
+  for (int i=0; i<zeroOffsetSamples; i++) {
+    xZero += analogRead (xPin);
+    yZero += analogRead (yPin);
+    zZero += analogRead (zPin);
   }
+
+  xZero /= zeroOffsetSamples;
+  yZero /= zeroOffsetSamples;
+  zZero /= zeroOffsetSamples;
+
+  Serial.println ("*** Zero offset:");
+  Serial.print   ("    x: "); 
+  Serial.println (xZero);
+  Serial.print   ("    y: "); 
+  Serial.println (yZero);
+  Serial.print   ("    z: "); 
+  Serial.println (zZero);
+
+  xMin = xZero;
+  xMax = xZero;
+  yMin = yZero;
+  yMax = yZero;
+  zMin = zZero;
+  zMax = zZero;
+  
+  // now turn on the LED and set a timer for some # of seconds
+  // during that time, watch for the max and min values on each
+  // axis and save them (will be used in real app)
+  // if the board is rotated +/- 90 degrees, we can auto-calibrate
+  startCalibration = millis ();
+
+  while ((millis () - startCalibration) < long (calibrateSeconds * 1000)) {
+    x = analogRead (xPin);
+    y = analogRead (yPin);
+    z = analogRead (zPin);
+    xMin = min (xMin, x);  //  - xZero);
+    xMax = max (xMax, x);  //  - xZero);
+    yMin = min (yMin, y);  //  - yZero);
+    yMax = max (yMax, y);  //  - yZero);
+    zMin = min (zMin, z);  //  - zZero);
+    zMax = max (zMax, z);  //  - zZero);
+  } 
+
+  
+  Serial.println ("*** Minimax: ");
+  Serial.print   ("    x raw : "); Serial.print (xMin); Serial.print ("\t"); Serial.println (xMax);
+  Serial.print   ("    y raw : "); Serial.print (yMin); Serial.print ("\t"); Serial.println (yMax);
+  Serial.print   ("    z raw : "); Serial.print (zMin); Serial.print ("\t"); Serial.println (zMax);
+  Serial.print   ("    x zero: "); Serial.print (xMin - xZero); Serial.print ("\t"); Serial.println (xMax - xZero);
+  Serial.print   ("    y zero: "); Serial.print (yMin - yZero); Serial.print ("\t"); Serial.println (yMax - yZero);
+  Serial.print   ("    z zero: "); Serial.print (zMin - zZero); Serial.print ("\t"); Serial.println (zMax - zZero);
 }
 
 
@@ -41,77 +96,10 @@ void initADXL() {
  */ 
 boolean monitorPitchAndRoll() {
   Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
-  /*
-  // We use curSamp as an index into the array and increment at the
-  // end of the main loop(), so see if we need to reset it at the
-  // very start of the loop
-  if (curSamp == sampleSize) curSamp = 0;
-
-  xVal = analogRead(ADXLxpin);
-  yVal = analogRead(ADXLypin);
-  zVal = analogRead(ADXLzpin);
-
-  xVals[curSamp] = xVal;
-  yVals[curSamp] = yVal;
-  zVals[curSamp] = zVal;
-  
-  xPreAvg = xAvg;
-  yPreAvg = yAvg;
-  zPreAvg = zAvg;
-  
-  xAvg = yAvg = zAvg = 0;
-  //yAvg = 0;
-  //zAvg = 0;
-  
-  for (int i=0; i < sampleSize; i++) {
-	xAvg += xVals[i];
-	yAvg += yVals[i];
-	zAvg += zVals[i];
-  }
-  
-  // For those who didn't grow up on C, "x >> y" is a way of saying
-  // shift the bits in variable x y bits to the right, effectively
-  // dividing by 2 and losing the remainder.  1 bit is in half, 2
-  // bits is 1/4, and so on.  It's much faster than using the divide
-  // operator "/" if you're working with powers of 2.  (Ok, so a
-  // good compiler would optimize that for you, but this is just in
-  // case.)
-  xAvg = (xAvg >> shiftBits);
-  yAvg = (yAvg >> shiftBits);
-  zAvg = (zAvg >> shiftBits);
-  
-  Serial.print(xPreAvg);
-  Serial.print(" ");
-  Serial.print(xAvg);
-  Serial.print(" ");
-  Serial.print(xVal);
-  Serial.print(" | ");
-  Serial.print(yPreAvg);
-  Serial.print(" ");
-  Serial.print(yAvg);
-  Serial.print(" ");
-  Serial.print(yVal);
-  Serial.print(" | ");
-  Serial.print(zPreAvg);
-  Serial.print(" ");
-  Serial.print(zAvg);
-  Serial.print(" ");
-  Serial.println(zVal);
-
-  curSamp++;  // increment our array pointer
-  
-  return true; // override (return false for tip);
-  
-  /*
-  
-  TODO: Add the conditions
-  
-  if(maxPitch) {
-    
-  }
-  
-  if(maxRoll) {
-    
-  }
-  */
 }
+
+
+
+
+  
+

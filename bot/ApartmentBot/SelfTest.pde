@@ -18,10 +18,6 @@ boolean selfTest() {
   spin(0, MaxMotorSpeed, 1000);
   spin(1, MaxMotorSpeed, 1000);
   
-  // Ultrasonic Range Finder Tests.
-  
-  // Infared Tests
-  
   Serial.println("EXEC: SelfTest.selfTest - Finished Self Test");
   Serial.println("");
   

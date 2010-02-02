@@ -81,9 +81,9 @@ void moveMotor(char motor, char* motorDirection, int motorSpeed) {
  * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
  * int reverseDuration = Time in ms of reverse duration.
  */
-void forward(int fowardSpeed, int forwardDuration) {
+void forward(int fowardSpeed, int forwardDuration = 0) {
   moveMotor('c', "forward", fowardSpeed);
-  delay(forwardDuration);
+  if(forwardDuration != 0) delay(forwardDuration);
 }
 
 
@@ -93,9 +93,9 @@ void forward(int fowardSpeed, int forwardDuration) {
  * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
  * int reverseDuration = Time in ms of reverse duration.
  */
-void reverse(int reverseSpeed, int reverseDuration) {
+void reverse(int reverseSpeed, int reverseDuration = 0) {
   moveMotor('c', "reverse", reverseSpeed);
-  delay(reverseDuration);
+  if(reverseDuration != 0) delay(reverseDuration);
 }
 
 
@@ -105,7 +105,7 @@ void reverse(int reverseSpeed, int reverseDuration) {
  * int turnSpeed = Speed to run the slow track during the turn (inside track) 0 - MaxMotorSpeed
  * int duration = Time in ms to run the turn before going back to straight movement
  */
-void turnLeft(int turnSpeed, int duration) {
+void turnLeft(int turnSpeed, int duration = 0) {
   Serial.println("EXEC: MotorControl.turnLeft = speed:");
   Serial.print(turnSpeed);
   Serial.print(" dur:");
@@ -116,7 +116,7 @@ void turnLeft(int turnSpeed, int duration) {
     moveMotor('a', "reverse", MaxMotorSpeed);
   }
   
-  delay(duration);
+  if(duration != 0 ) delay(duration);
 }
 
 
@@ -126,7 +126,7 @@ void turnLeft(int turnSpeed, int duration) {
  * int turnSpeed = Speed to run the slow track during the turn (inside track) 0 - MaxMotorSpeed
  * int duration = Time in ms to run the turn before going back to straight movement
  */
-void turnRight(int turnSpeed, int duration) {
+void turnRight(int turnSpeed, int duration = 0) {
   Serial.println("EXEC: MotorControl.turnRight = speed:");
   Serial.print(turnSpeed);
   Serial.print(" dur:");
@@ -137,7 +137,7 @@ void turnRight(int turnSpeed, int duration) {
     moveMotor('b', "reverse", turnSpeed);
   }
   
-  delay(duration);
+  if(duration != 0 ) delay(duration);
 }
 
 
@@ -148,7 +148,7 @@ void turnRight(int turnSpeed, int duration) {
  * int turnSpeed = Speed to run the track +/- during the turn. 0 - MaxMotorSpeed
  * int duration = Time in ms to run the turn before going back to straight movement
  */
-void spin(int turnDirection, int turnSpeed, int duration) {
+void spin(int turnDirection, int turnSpeed, int duration = 0) {
   Serial.print("EXEC: MotorControl.spin = dir:");
   Serial.print(turnDirection);
   Serial.print(" speed:");
@@ -160,14 +160,13 @@ void spin(int turnDirection, int turnSpeed, int duration) {
     // Left 
     moveMotor('a', "reverse", MaxMotorSpeed);
     moveMotor('b', "forward", MaxMotorSpeed);
-    // motor B forwards
   } else {
     // Right
     moveMotor('a', "forward", MaxMotorSpeed);
     moveMotor('b', "reverse", MaxMotorSpeed);
   }
   
-  delay(duration);
+  if(duration != 0) delay(duration);
 }
 
 
