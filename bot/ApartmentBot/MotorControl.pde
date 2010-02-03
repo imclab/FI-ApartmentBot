@@ -6,8 +6,12 @@ int motorBCurrentSpeed = 0; // Global var to hold active speed of motor B
 // Roving Configuration
 const int spurtDuration = 200;    // The time it takes in ms to run a short burst of spin movement.
 const int suprtCheckAmount = 10;  // The amount of checks to run in a spurt test
-const int MaxMotorSpeed = 175;    // 70% capibility
+const int MaxMotorSpeed = 250;    // Max motor speed
 const int SpinDuration = 500;	  // The amount of time in ms that is take for the rover to do a 180 degreed turn at MaxMotorSpeed
+
+const int motorStartSpeed = 80;  // The speed the motors start moving the robot
+const int powerArcIncrement = 19; // Loop increment for the power arc
+const int powerArcDelay = 200;   // Delay in ms for the arc loop
 
 
 /**
@@ -35,38 +39,64 @@ void moveMotor(char motor, char* motorDirection, int motorSpeed) {
   
   if(motorSpeed <= MaxMotorSpeed) {
     int dir = 0;
+    int dirStore = 0; // Store the dir for the power arc.
     
     if(motorDirection == "forward") dir = HIGH;
     else if(motorDirection == "reverse") dir = LOW;
     
+    int x = 0; // Power Arc
+    
     switch(motor) {
       // Motor A
       case 'a':
-        analogWrite(PwmPinMotorA, motorSpeed);
-        digitalWrite(DirectionPinMotorA, dir);
-        motorACurrentSpeed = motorSpeed;
-        motorADirection = motorDirection;
+        if(motorSpeed == 0) {
+          analogWrite(PwmPinMotorA, motorSpeed);
+          digitalWrite(DirectionPinMotorA, dir);
+          break;
+        }
+        
+        for(x = motorStartSpeed; x < motorSpeed; x++) {
+          analogWrite(PwmPinMotorA, motorSpeed);
+          digitalWrite(DirectionPinMotorA, dir);
+        }
       break;
      
       // Motor B
       case 'b':
-        analogWrite(PwmPinMotorB, motorSpeed);
-        digitalWrite(DirectionPinMotorB, dir);
-        motorBCurrentSpeed = motorSpeed;
-        motorBDirection = motorDirection;
+        if(motorSpeed == 0) {
+          analogWrite(PwmPinMotorB, 0);
+          digitalWrite(DirectionPinMotorB, dir);
+          break;
+        }
+        
+        for(x = motorStartSpeed; x < motorSpeed; x++) {
+          analogWrite(PwmPinMotorB, x);
+          digitalWrite(DirectionPinMotorB, dir);
+        }
       break;
          
       // Both Motors
       case 'c':
-        analogWrite(PwmPinMotorA, motorSpeed);
-        digitalWrite(DirectionPinMotorA, dir);
-        motorACurrentSpeed = motorSpeed;
-        motorADirection = motorDirection;
-      
-        analogWrite(PwmPinMotorB, motorSpeed);
-        digitalWrite(DirectionPinMotorB, dir);
-        motorBCurrentSpeed = motorSpeed;
-        motorBDirection = motorDirection;
+        dirStore = dir; // Store initial direction
+        
+        if(motorSpeed == 0) {
+          stopRover();
+          break;
+        }
+        
+        for(x = motorStartSpeed; x < motorSpeed; x++) {
+          analogWrite(PwmPinMotorA, x);
+          digitalWrite(DirectionPinMotorA, dirStore);
+          
+          if(dirStore == HIGH) dir = LOW;
+          else dir = HIGH;
+        
+          analogWrite(PwmPinMotorB, x);
+          digitalWrite(DirectionPinMotorB, dir);
+          
+          x = x + powerArcIncrement; // increment
+          delay(powerArcDelay); // update delay
+        }
       break;  
     }
   } else {
@@ -112,7 +142,7 @@ void turnLeft(int turnSpeed, int duration = 0) {
   Serial.println(duration);
   
   if(turnSpeed < MaxMotorSpeed) {
-    moveMotor('a', "forward", turnSpeed);
+    moveMotor('b', "forward", turnSpeed);
     moveMotor('a', "reverse", MaxMotorSpeed);
   }
   

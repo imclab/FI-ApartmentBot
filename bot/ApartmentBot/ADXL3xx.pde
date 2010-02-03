@@ -94,8 +94,20 @@ void zeroOut() {
 /**
  * Monitors a ADXL3xx accelerometer and checks if the rover is close to tipping over.
  */ 
-boolean monitorPitchAndRoll() {
+void monitorPitchAndRoll() {
   Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
+  
+  x = analogRead (xPin);
+  y = analogRead (yPin);
+  z = analogRead (zPin);
+  
+  Serial.print("X:");
+  Serial.println(x);
+  Serial.print("Y:");
+  Serial.println(y);
+  Serial.print("Z:");
+  Serial.println(z);
+  Serial.println("");
 }
 
 

@@ -13,11 +13,10 @@
  *
  * Example Command: "f200#"
  */
- 
+
 const int BufferLength = 16;
 const char LineEnd = '#';
 
-char previousBuffer[BufferLength];
 char inputBuffer[BufferLength];
 
 
@@ -25,19 +24,16 @@ char inputBuffer[BufferLength];
  * Watches for incomming serial commands from the host.
  */
 void readIncommingCommand() {
-  Serial.println("Exec: UserControl.readIncommingCommand");
+  //Serial.println("Exec: UserControl.readIncommingCommand");
   
-  if (Serial.available() > 0) {
-    int inputLength = 0;
+  int inputLength = 0;
+  do {
+    while (!Serial.available()); // wait for input
     inputBuffer[inputLength] = Serial.read(); // read it in
-
-    // Check input is valid and not the same as the last command.
-    if(previousBuffer[BufferLength] != inputBuffer[inputLength] && inputBuffer[inputLength] != LineEnd && ++inputLength < BufferLength) {
-      inputBuffer[inputLength] = 0; //  add null terminator
-      handelCommand(inputBuffer, inputLength);
-      previousBuffer[BufferLength] = inputBuffer[inputLength]; 
-    }
-  } 
+  } while (inputBuffer[inputLength] != LineEnd && ++inputLength < BufferLength);
+  
+  inputBuffer[inputLength] = 0; //  add null terminator
+  handelCommand(inputBuffer, inputLength);
 }
 
 
@@ -48,19 +44,27 @@ void handelCommand(char* input, int length) {
   Serial.print("Exec: UserControl.handelCommand - ");
   Serial.println(input);
   
-  if (length < 2) return; // Not a valid command
+  //if (length < 2) return; // Not a valid command
     
   int value = 0;
   
   // calculate number following command
-  if (length > 2) value = atoi(&input[1]);
+  if (length >= 2) {
+    value = atoi(&input[1]);
+  } else {
+    value = MaxMotorSpeed;
+  }
+  
   int* command = (int*)input;
-
+  
   // Call the proper method depending on command.
-  switch(*command) {
-    case 'f': forward(value); break; // Move forward
-    case 'b': reverse(value); break; // Move backwards
-    case 'l': spin(0, value); break; // Spin left
-    case 'r': spin(1, value); break; // Spin left
+  switch(char(*command)) {
+    case 'f': forward(value);   break; // Move forward
+    case 'b': reverse(value);   break; // Move backwards
+    case 'l': turnLeft(value);  break; // Spin left
+    case 'r': turnRight(value); break; // Spin left
+    case 's': stopRover();      break; // Stop
+    default:
+      Serial.println("Error: Invaild command.");
   }
 }
