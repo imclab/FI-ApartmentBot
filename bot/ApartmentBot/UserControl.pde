@@ -4,10 +4,8 @@
  * Directions - f = forward
  *              b = backwards
  *              l = left spin
- *              //lt = left turn
  *              r = right spin
- *              //rt = right turn
- *
+ *              
  * Power - 1 - 255
  *
  *
@@ -15,7 +13,7 @@
  */
 
 const int BufferLength = 16;
-const char LineEnd = '#';
+const char LineEnd = '#';    // Character to end a line
 
 char inputBuffer[BufferLength];
 
@@ -26,14 +24,24 @@ char inputBuffer[BufferLength];
 void readIncommingCommand() {
   //Serial.println("Exec: UserControl.readIncommingCommand");
   
-  int inputLength = 0;
+  /*
   do {
     while (!Serial.available()); // wait for input
     inputBuffer[inputLength] = Serial.read(); // read it in
   } while (inputBuffer[inputLength] != LineEnd && ++inputLength < BufferLength);
+  */
   
-  inputBuffer[inputLength] = 0; //  add null terminator
-  handelCommand(inputBuffer, inputLength);
+  if(!Serial.available()) {
+    int inputLength = 0;
+    inputBuffer[inputLength] = Serial.read(); // read it in
+    if(inputBuffer[inputLength] != LineEnd && ++inputLength < BufferLength) {
+      inputBuffer[inputLength] = 0; //  add null terminator
+      handelCommand(inputBuffer, inputLength);    
+    }
+  }
+  
+  //inputBuffer[inputLength] = 0; //  add null terminator
+  //handelCommand(inputBuffer, inputLength);
 }
 
 
@@ -41,14 +49,13 @@ void readIncommingCommand() {
  * Handel the command.
  */
 void handelCommand(char* input, int length) {
-  Serial.print("Exec: UserControl.handelCommand - ");
-  Serial.println(input);
+  //Serial.print("Exec: UserControl.handelCommand - ");
+  //Serial.println(input);
   
   //if (length < 2) return; // Not a valid command
     
   int value = 0;
   
-  // calculate number following command
   if (length >= 2) {
     value = atoi(&input[1]);
   } else {
@@ -64,6 +71,7 @@ void handelCommand(char* input, int length) {
     case 'l': turnLeft(value);  break; // Spin left
     case 'r': turnRight(value); break; // Spin left
     case 's': stopRover();      break; // Stop
+    
     default:
       Serial.println("Error: Invaild command.");
   }

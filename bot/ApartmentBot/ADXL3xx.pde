@@ -47,13 +47,13 @@ void zeroOut() {
   yZero /= zeroOffsetSamples;
   zZero /= zeroOffsetSamples;
 
-  Serial.println ("*** Zero offset:");
-  Serial.print   ("    x: "); 
-  Serial.println (xZero);
-  Serial.print   ("    y: "); 
-  Serial.println (yZero);
-  Serial.print   ("    z: "); 
-  Serial.println (zZero);
+  Serial.println("*** Zero offset:");
+  Serial.print("x: "); 
+  Serial.println(xZero);
+  Serial.print("y: "); 
+  Serial.println(yZero);
+  Serial.print("z: "); 
+  Serial.println(zZero);
 
   xMin = xZero;
   xMax = xZero;
@@ -62,8 +62,7 @@ void zeroOut() {
   zMin = zZero;
   zMax = zZero;
   
-  // now turn on the LED and set a timer for some # of seconds
-  // during that time, watch for the max and min values on each
+  // Watch for the max and min values on each
   // axis and save them (will be used in real app)
   // if the board is rotated +/- 90 degrees, we can auto-calibrate
   startCalibration = millis ();
@@ -82,12 +81,12 @@ void zeroOut() {
 
   
   Serial.println ("*** Minimax: ");
-  Serial.print   ("    x raw : "); Serial.print (xMin); Serial.print ("\t"); Serial.println (xMax);
-  Serial.print   ("    y raw : "); Serial.print (yMin); Serial.print ("\t"); Serial.println (yMax);
-  Serial.print   ("    z raw : "); Serial.print (zMin); Serial.print ("\t"); Serial.println (zMax);
-  Serial.print   ("    x zero: "); Serial.print (xMin - xZero); Serial.print ("\t"); Serial.println (xMax - xZero);
-  Serial.print   ("    y zero: "); Serial.print (yMin - yZero); Serial.print ("\t"); Serial.println (yMax - yZero);
-  Serial.print   ("    z zero: "); Serial.print (zMin - zZero); Serial.print ("\t"); Serial.println (zMax - zZero);
+  Serial.print   ("x raw : "); Serial.print (xMin); Serial.print ("\t"); Serial.println (xMax);
+  Serial.print   ("y raw : "); Serial.print (yMin); Serial.print ("\t"); Serial.println (yMax);
+  Serial.print   ("z raw : "); Serial.print (zMin); Serial.print ("\t"); Serial.println (zMax);
+  Serial.print   ("x zero: "); Serial.print (xMin - xZero); Serial.print ("\t"); Serial.println (xMax - xZero);
+  Serial.print   ("y zero: "); Serial.print (yMin - yZero); Serial.print ("\t"); Serial.println (yMax - yZero);
+  Serial.print   ("z zero: "); Serial.print (zMin - zZero); Serial.print ("\t"); Serial.println (zMax - zZero);
 }
 
 
@@ -95,23 +94,8 @@ void zeroOut() {
  * Monitors a ADXL3xx accelerometer and checks if the rover is close to tipping over.
  */ 
 void monitorPitchAndRoll() {
-  Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
-  
-  x = analogRead (xPin);
-  y = analogRead (yPin);
-  z = analogRead (zPin);
-  
-  Serial.print("X:");
-  Serial.println(x);
-  Serial.print("Y:");
-  Serial.println(y);
-  Serial.print("Z:");
-  Serial.println(z);
-  Serial.println("");
+  //Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
 }
-
-
-
 
   
 

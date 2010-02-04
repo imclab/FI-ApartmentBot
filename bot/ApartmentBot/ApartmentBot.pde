@@ -9,7 +9,7 @@ const int SerialSpeed = 9600;         // Serial baud rate
 
 // General
 boolean roveMode = false;             // If the robot startup in rover mode or not, also the switch for turning rove mode on and off.
-boolean botReady = true;             // Holds back the loop until checks have been verified.
+boolean botReady = false;             // Holds back the loop until checks have been verified.
 const int roveCheckInterval = 200;    // Time between obstical checks in rover mode.
 
 // Ardumoto
@@ -24,6 +24,8 @@ const int minimumDetectDistance = 3;  // Minimum distance in inches the sensor w
 
 
 void setup() {
+  // look into (arduino MCUSR) http://privatepaste.com/4f8647f4c1
+  
   Serial.begin(SerialSpeed);
   Serial.println("FI-ApartmentBot version 0.01");
   Serial.println("Written By: Matt Fisher");
@@ -36,16 +38,16 @@ void setup() {
   initArdumoto();   // Motor Controller
   //initADXL();       // Accelerometer
   
-  //if(!selfTest()) botReady = false; // Run a selftest on boot.
+  if(!selfTest()) botReady = false; // Run a selftest on boot.
   //Serial.println("Notice: Robot ready for command...");
 }
 
 
 void loop() {
   if(botReady) {
-    if(roveMode) rove(roveCheckInterval);   // The drive time between PING))) checks.
-    else readIncommingCommand();            // Watch for user control.
+    if(roveMode) 
+      rove(roveCheckInterval);   // The drive time between PING))) checks.
+    else 
+      readIncommingCommand();    // Watch for user control.
   }
- //monitorPitchAndRoll();
- //delay(500);
 }

@@ -18,18 +18,17 @@ void rove(int checkDelay) {
         // Select a random direction to turn
         obsticalCheck(random(0, 2));
         
-      } else*/ moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
+      } else*/ 
+        moveMotor('c', "forward", MaxMotorSpeed); // Move forward.
       
       delay(checkDelay);
-   // }
-  //} else {
+    //}
+   /*} else {
     // About to tip over, stop and correct.
-   // Serial.println("Warning: Tip correction activated.");
-    
-   // stopRover();
-    
+    Serial.println("Warning: Tip correction activated.");
+    stopRover();
     // TODO: Calculate which way to turn around based on roll.  
-  //}
+  }*/
   
   Serial.println("");
 }

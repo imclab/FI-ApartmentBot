@@ -7,8 +7,8 @@
 
 const int voltageReadPin = 0;
 const int voltageUnitValue = 0.0048828125;
-const int alertVoltage = 5;                  // The voltage we will alert of low voltage.
-const int minimumVoltage = 5;                // The minumum voltage we will allow the robot to get to (to save the Lipos).
+const int alertVoltage = 3.3;                  // The voltage we will alert of low voltage.
+const int minimumVoltage = 3;                // The minumum voltage we will allow the robot to get to (to save the Lipos).
 int currentBatteryVoltage = 0;               // Global value to hold the last read voltage.
 
 
@@ -25,8 +25,14 @@ boolean isBatteryOK() {
     return true; // If the voltage is 0 there is no battery and we are connected to USB or the wall.
   }
   
-  if(currentBatteryVoltage <= alertVoltage || currentBatteryVoltage <= minimumVoltage) return false;
-  else return true;
+  if(currentBatteryVoltage <= alertVoltage) return false;
+  
+  if(currentBatteryVoltage <= minimumVoltage) {
+    shutdown();
+    return false;
+  }
+  
+  return true;
 }
 
 
@@ -42,5 +48,13 @@ int readVoltage() {
   Serial.println("V");
   
   return batteryVoltage;
+}
+
+
+/**
+ * Shutdown the Arduino.
+ */ 
+void shutdown() {
+  
 }
 

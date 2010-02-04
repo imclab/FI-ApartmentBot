@@ -13,10 +13,12 @@ boolean selfTest() {
   }
   
   // Drive system test.
+  /*
   forward(MaxMotorSpeed, 500);
   reverse(MaxMotorSpeed, 500);
   spin(0, MaxMotorSpeed, 1000);
   spin(1, MaxMotorSpeed, 1000);
+  */
   
   Serial.println("EXEC: SelfTest.selfTest - Finished Self Test");
   Serial.println("");
