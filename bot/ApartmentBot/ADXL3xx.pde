@@ -1,3 +1,4 @@
+/*
 const int xPin = 1;   // x-axis of the accelerometer output - analog pin
 const int yPin = 2;   // y-axis of the accelerometer output - analog pin
 const int zPin = 3;   // z-axis of the accelerometer output - analog pin
@@ -21,21 +22,23 @@ int x, y, z;  // for reading pin values
 
 long startCalibration;  // timer start value for calibration
 
-
+*/
 
 /**
  * Sets up the pinModes to the ADXLxx Accelerometer .
  */
 void initADXL() {
-  Serial.println("EXEC: ADXL3xx.initADXL");
+  //Serial.println("EXEC: ADXL3xx.initADXL");
   
-  zeroOut();
+  //zeroOut();
 }
+
 
 /**
  * Establish the zero offset values for each axis by reading the pin values a bunch of 
  * times and averaging them -- the board must be motionless during this loop.
  */
+ /*
 void zeroOut() {
   for (int i=0; i<zeroOffsetSamples; i++) {
     xZero += analogRead (xPin);
@@ -88,13 +91,15 @@ void zeroOut() {
   Serial.print   ("y zero: "); Serial.print (yMin - yZero); Serial.print ("\t"); Serial.println (yMax - yZero);
   Serial.print   ("z zero: "); Serial.print (zMin - zZero); Serial.print ("\t"); Serial.println (zMax - zZero);
 }
-
+*/
 
 /**
  * Monitors a ADXL3xx accelerometer and checks if the rover is close to tipping over.
- */ 
-void monitorPitchAndRoll() {
+ */
+ 
+boolean monitorPitchAndRoll() {
   //Serial.println("EXEC: ADXL3xx.monitorPitchAndRoll");
+  return true;
 }
 
   

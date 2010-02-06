@@ -22,26 +22,16 @@ char inputBuffer[BufferLength];
  * Watches for incomming serial commands from the host.
  */
 void readIncommingCommand() {
-  //Serial.println("Exec: UserControl.readIncommingCommand");
+  Serial.println("Notice: Robot ready for command...");
   
-  /*
+  int inputLength = 0;
   do {
     while (!Serial.available()); // wait for input
     inputBuffer[inputLength] = Serial.read(); // read it in
   } while (inputBuffer[inputLength] != LineEnd && ++inputLength < BufferLength);
-  */
   
-  if(!Serial.available()) {
-    int inputLength = 0;
-    inputBuffer[inputLength] = Serial.read(); // read it in
-    if(inputBuffer[inputLength] != LineEnd && ++inputLength < BufferLength) {
-      inputBuffer[inputLength] = 0; //  add null terminator
-      handelCommand(inputBuffer, inputLength);    
-    }
-  }
-  
-  //inputBuffer[inputLength] = 0; //  add null terminator
-  //handelCommand(inputBuffer, inputLength);
+  inputBuffer[inputLength] = 0; //  add null terminator
+  handelCommand(inputBuffer, inputLength);
 }
 
 
@@ -50,29 +40,50 @@ void readIncommingCommand() {
  */
 void handelCommand(char* input, int length) {
   //Serial.print("Exec: UserControl.handelCommand - ");
-  //Serial.println(input);
   
-  //if (length < 2) return; // Not a valid command
-    
-  int value = 0;
+  int value = MaxMotorSpeed;
   
-  if (length >= 2) {
-    value = atoi(&input[1]);
-  } else {
-    value = MaxMotorSpeed;
-  }
+  if (length >= 2) value = atoi(&input[1]);
   
   int* command = (int*)input;
   
   // Call the proper method depending on command.
   switch(char(*command)) {
-    case 'f': forward(value);   break; // Move forward
-    case 'b': reverse(value);   break; // Move backwards
-    case 'l': turnLeft(value);  break; // Spin left
-    case 'r': turnRight(value); break; // Spin left
-    case 's': stopRover();      break; // Stop
+    case 'f': 
+      analogWrite(PwmPinMotorA, value);
+      digitalWrite(DirectionPinMotorA, HIGH);
+      analogWrite(PwmPinMotorB, value);
+      digitalWrite(DirectionPinMotorB, LOW); 
+    break; 
     
-    default:
-      Serial.println("Error: Invaild command.");
+    case 'b': 
+      analogWrite(PwmPinMotorA, value);
+      digitalWrite(DirectionPinMotorA, LOW);
+      analogWrite(PwmPinMotorB, value);
+      digitalWrite(DirectionPinMotorB, HIGH);  
+    break; 
+    
+    case 'l': 
+      analogWrite(PwmPinMotorA, value);
+      digitalWrite(DirectionPinMotorA, HIGH);
+      analogWrite(PwmPinMotorB, value);
+      digitalWrite(DirectionPinMotorB, HIGH);
+    break; 
+    
+    case 'r': 
+      analogWrite(PwmPinMotorA, value);
+      digitalWrite(DirectionPinMotorA, LOW);
+      analogWrite(PwmPinMotorB, value);
+      digitalWrite(DirectionPinMotorB, LOW);
+    break; 
+    
+    case 's': 
+      analogWrite(PwmPinMotorA, 0);
+      digitalWrite(DirectionPinMotorA, LOW);
+      analogWrite(PwmPinMotorB, 0);
+      digitalWrite(DirectionPinMotorB, LOW);     
+    break; 
+    
+    default: Serial.println("Error: Invaild command.");
   }
 }

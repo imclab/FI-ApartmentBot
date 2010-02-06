@@ -4,10 +4,6 @@ const int suprtCheckAmount = 10;  // The amount of checks to run in a spurt test
 const int MaxMotorSpeed = 250;    // Max motor speed
 const int SpinDuration = 500;	  // The amount of time in ms that is take for the rover to do a 180 degreed turn at MaxMotorSpeed
 
-const int motorStartSpeed = 80;   // The speed the motors start moving the robot
-const int powerArcIncrement = 19; // Loop increment for the power arc
-const int powerArcDelay = 200;    // Delay in ms for the arc loop
-
 
 /**
  * Sets up the pinModes to the Ardumoto controller.
@@ -31,74 +27,40 @@ void initArdumoto() {
  */
 void moveMotor(char motor, char* motorDirection, int motorSpeed) {
   if(motorSpeed <= MaxMotorSpeed) {
-    int dir = 0;      // The direction for movement
-    int dirStore = 0; // Store the direction for the power arc.
+    int dir = 0;
     
-    // Set the given direction as a variable with const values
-    if(motorDirection == "forward") dir = HIGH;
-    else if(motorDirection == "reverse" || motorDirection == "backwards") dir = LOW;
-    
-    int x = 0; // Power Arc
+    if(motor == 'a') {
+       if(motorDirection == "forward") dir = HIGH;
+       else if(motorDirection == "reverse" || motorDirection == "backwards") dir = LOW;
+    } else if(motor == 'b') {
+       if(motorDirection == "forward") dir = LOW;
+       else if(motorDirection == "reverse" || motorDirection == "backwards") dir = HIGH;
+    }
     
     switch(motor) {
-      // Motor A
       case 'a':
-        if(motorSpeed == 0) {
-          analogWrite(PwmPinMotorA, motorSpeed);
-          digitalWrite(DirectionPinMotorA, dir);
-          break;
-        }
-        
-        for(x = motorStartSpeed; x < motorSpeed; x++) {
-          analogWrite(PwmPinMotorA, motorSpeed);
-          digitalWrite(DirectionPinMotorA, dir);
-          
-          x = x + powerArcIncrement; // increment
-          delay(powerArcDelay); // update delay
-        }
+        analogWrite(PwmPinMotorA, motorSpeed);
+        digitalWrite(DirectionPinMotorA, dir);
       break;
      
-      // Motor B
       case 'b':
-        if(motorSpeed == 0) {
-          analogWrite(PwmPinMotorB, 0);
-          digitalWrite(DirectionPinMotorB, dir);
-          break;
-        }
-        
-        for(x = motorStartSpeed; x < motorSpeed; x++) {
-          analogWrite(PwmPinMotorB, x);
-          digitalWrite(DirectionPinMotorB, dir);
-          
-          x = x + powerArcIncrement; // increment
-          delay(powerArcDelay); // update delay
-        }
+        analogWrite(PwmPinMotorB, motorSpeed);
+        digitalWrite(DirectionPinMotorB, dir);
       break;
          
-      // Both Motors
       case 'c':
-        dirStore = dir; // Store initial direction
-        
-        if(motorSpeed == 0) {
-          stopRover();
-          break;
-        }
-        
-        for(x = motorStartSpeed; x < motorSpeed; x++) {
-          // Motor A
-          analogWrite(PwmPinMotorA, x);
-          digitalWrite(DirectionPinMotorA, dirStore);
-          
-          // Swap directions to keep the drives running in the same direction
-          if(dirStore == HIGH) dir = LOW;
-          else dir = HIGH;
-        
-          // Motor B
-          analogWrite(PwmPinMotorB, x);
-          digitalWrite(DirectionPinMotorB, dir);
-          
-          x = x + powerArcIncrement; // increment
-          delay(powerArcDelay); // update delay
+        if(motorDirection == "forward") {
+          analogWrite(PwmPinMotorA, motorSpeed);
+          digitalWrite(DirectionPinMotorA, HIGH);
+            
+          analogWrite(PwmPinMotorB, motorSpeed);
+          digitalWrite(DirectionPinMotorB, LOW);
+        } else {
+          analogWrite(PwmPinMotorA, motorSpeed);
+          digitalWrite(DirectionPinMotorA, LOW);
+            
+          analogWrite(PwmPinMotorB, motorSpeed);
+          digitalWrite(DirectionPinMotorB, HIGH);
         }
       break;  
     }
@@ -111,24 +73,24 @@ void moveMotor(char motor, char* motorDirection, int motorSpeed) {
 /**
  * Reverses the robot for a given duration at a given speed.
  *
- * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
- * int reverseDuration = Time in ms of reverse duration.
+ * int fspeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
+ * int duration = Time in ms of reverse duration.
  */
-void forward(int fowardSpeed, int forwardDuration = 0) {
-  moveMotor('c', "forward", fowardSpeed);
-  if(forwardDuration != 0) delay(forwardDuration);
+void forward(int fspeed, int duration = 0) {
+  moveMotor('c', "forward", fspeed);
+  checkDuration(duration);
 }
 
 
 /**
  * Reverses the robot for a given duration at a given speed.
  *
- * int reverseSpeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
- * int reverseDuration = Time in ms of reverse duration.
+ * int rspeed = Speed to run the track during the reverse (0 - MaxMotorSpeed)
+ * int duration = Time in ms of reverse duration.
  */
-void reverse(int reverseSpeed, int reverseDuration = 0) {
-  moveMotor('c', "reverse", reverseSpeed);
-  if(reverseDuration != 0) delay(reverseDuration);
+void reverse(int rspeed, int duration = 0) {
+  moveMotor('c', "reverse", rspeed);
+  checkDuration(duration);
 }
 
 
@@ -144,7 +106,7 @@ void turnLeft(int turnSpeed, int duration = 0) {
     moveMotor('a', "reverse", MaxMotorSpeed);
   }
   
-  if(duration != 0 ) delay(duration);
+  checkDuration(duration);
 }
 
 
@@ -159,8 +121,7 @@ void turnRight(int turnSpeed, int duration = 0) {
     moveMotor('a', "forward", MaxMotorSpeed);
     moveMotor('b', "reverse", turnSpeed);
   }
-  
-  if(duration != 0 ) delay(duration);
+  checkDuration(duration);
 }
 
 
@@ -173,16 +134,14 @@ void turnRight(int turnSpeed, int duration = 0) {
  */
 void spin(int turnDirection, int turnSpeed, int duration = 0) {
   if(turnDirection == 0) {
-    // Left 
-    moveMotor('a', "reverse", MaxMotorSpeed);
-    moveMotor('b', "forward", MaxMotorSpeed);
+    moveMotor('a', "reverse", turnSpeed);
+    moveMotor('b', "forward", turnSpeed);
   } else {
-    // Right
-    moveMotor('a', "forward", MaxMotorSpeed);
-    moveMotor('b', "reverse", MaxMotorSpeed);
+    moveMotor('a', "forward", turnSpeed);
+    moveMotor('b', "reverse", turnSpeed);
   }
   
-  if(duration != 0) delay(duration);
+  checkDuration(duration);
 }
 
 
@@ -190,11 +149,20 @@ void spin(int turnDirection, int turnSpeed, int duration = 0) {
  * Stops the movement of the motors.
  */
 void stopRover() {
-  // motor A
   analogWrite(PwmPinMotorA, 0);
   digitalWrite(DirectionPinMotorA, LOW);
   
-  // motor B
   analogWrite(PwmPinMotorB, 0);
   digitalWrite(DirectionPinMotorB, LOW);
+}
+
+
+/**
+ * Stops the rover after a given duration.
+ */
+void checkDuration(int duration) {
+  if(duration != 0) {
+    delay(duration);
+    stopRover();
+  }
 }

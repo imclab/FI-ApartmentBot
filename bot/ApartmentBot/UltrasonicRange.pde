@@ -33,6 +33,5 @@ long readPing() {
  * See: http://www.parallax.com/dl/docs/prod/acc/28015-PING-v1.3.pdf
  */
 long microsecondsToInches(long microseconds) {
-  //Serial.println("EXEC: UltrasoniceRange.microsecondsToInches");
   return microseconds / 74 / 2;
 }

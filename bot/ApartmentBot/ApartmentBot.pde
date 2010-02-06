@@ -24,8 +24,6 @@ const int minimumDetectDistance = 3;  // Minimum distance in inches the sensor w
 
 
 void setup() {
-  // look into (arduino MCUSR) http://privatepaste.com/4f8647f4c1
-  
   Serial.begin(SerialSpeed);
   Serial.println("FI-ApartmentBot version 0.01");
   Serial.println("Written By: Matt Fisher");
@@ -33,21 +31,16 @@ void setup() {
   Serial.println("---------------------------------");
   Serial.println("");
   
-  // init sensors
-  //initXbee();       // Xbee
-  initArdumoto();   // Motor Controller
-  //initADXL();       // Accelerometer
+  initXbee();      
+  initArdumoto();  
+  //initADXL();  
   
   if(!selfTest()) botReady = false; // Run a selftest on boot.
-  //Serial.println("Notice: Robot ready for command...");
 }
 
 
 void loop() {
   if(botReady) {
-    if(roveMode) 
-      rove(roveCheckInterval);   // The drive time between PING))) checks.
-    else 
-      readIncommingCommand();    // Watch for user control.
+    (roveMode) ? rove(roveCheckInterval) : readIncommingCommand();
   }
 }

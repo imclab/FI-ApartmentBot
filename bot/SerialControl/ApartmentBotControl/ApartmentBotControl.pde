@@ -25,29 +25,23 @@ void draw() {
     //break;
     
     case 2:
-      fill(204);            
-      myPort.write("BF200#");
+      myPort.write("f100#");
     break;
     
     case 3:
-      fill(204);            
-      myPort.write("AF200#");
+      myPort.write("b100#");
     break;
     
     case 4:
-      fill(204);            
-      myPort.write("BR200#");
+      myPort.write("l100#");
     break;
     
     case 5:
-      fill(204);            
-      myPort.write("AR200#");
+      myPort.write("r100#");
     break;
     
     default:
-      fill(0);                      // change color and
-      myPort.write("AF0#"); 
-      myPort.write("BF0#");
+      myPort.write("s#");
   }
  
   
